@@ -1,0 +1,2411 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Yusuf Chat</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#00a884;
+  --dark:#111b21;
+  --dark2:#202c33;
+  --dark3:#2a3942;
+  --light:#f0f2f5;
+  --white:#fff;
+  --text:#111;
+  --muted:#667781;
+  --bubble:#d9fdd3;
+}
+body{
+  font-family:Arial,Helvetica,sans-serif;
+  background:#d9dbd5;
+  color:var(--text);
+  height:100vh;
+  overflow:hidden
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0}
+.app{
+  width:100%;
+  height:100vh;
+  display:flex;
+  background:#fff;
+}
+.sidebar{
+  width:380px;
+  min-width:320px;
+  border-right:1px solid #ddd;
+  display:flex;
+  flex-direction:column;
+  background:#fff;
+}
+.top{
+  height:64px;
+  background:#f0f2f5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+}
+.avatar{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  overflow:hidden;
+  flex-shrink:0
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.top-actions{
+  display:flex;
+  gap:8px
+}
+.icon{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:transparent;
+  font-size:21px;
+  color:#54656f
+}
+.icon:hover{background:#dfe3e5}
+.search{
+  padding:8px 12px;
+  background:#fff;
+}
+.searchbox{
+  height:40px;
+  background:#f0f2f5;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  gap:10px
+}
+.searchbox input{
+  width:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+}
+.tabs{
+  display:flex;
+  height:50px;
+  border-bottom:1px solid #ddd
+}
+.tabs button{
+  flex:1;
+  background:#fff;
+  color:#667781;
+  font-weight:bold;
+  border-bottom:3px solid transparent
+}
+.tabs button.active{
+  color:var(--green);
+  border-color:var(--green)
+}
+.list{
+  overflow-y:auto;
+  flex:1
+}
+.chat-item{
+  height:72px;
+  padding:10px 14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid #eee;
+  cursor:pointer
+}
+.chat-item:hover{background:#f5f6f6}
+.chat-item.active{background:#ebebeb}
+.chat-info{
+  min-width:0;
+  flex:1
+}
+.chat-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px
+}
+.chat-name{
+  font-weight:bold;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.chat-time{
+  font-size:12px;
+  color:#667781;
+  white-space:nowrap
+}
+.last{
+  color:#667781;
+  font-size:14px;
+  margin-top:5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.badge{
+  background:var(--green);
+  color:#fff;
+  border-radius:20px;
+  min-width:20px;
+  height:20px;
+  padding:2px 6px;
+  font-size:11px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center
+}
+.empty{
+  padding:40px 20px;
+  text-align:center;
+  color:#667781
+}
+
+/* MAIN CHAT */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  background:#efeae2;
+  position:relative
+}
+.chat-header{
+  height:64px;
+  background:#f0f2f5;
+  display:flex;
+  align-items:center;
+  padding:8px 14px;
+  gap:10px;
+  border-bottom:1px solid #ddd
+}
+.back{
+  display:none
+}
+.header-info{
+  flex:1;
+  min-width:0
+}
+.header-name{
+  font-weight:bold
+}
+.header-status{
+  color:#667781;
+  font-size:13px;
+  margin-top:3px
+}
+.messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px 7%;
+  background:
+  radial-gradient(#ddd 1px,transparent 1px);
+  background-size:30px 30px;
+  background-color:#efeae2
+}
+.day{
+  text-align:center;
+  margin:10px 0 18px
+}
+.day span{
+  background:#fff;
+  color:#667781;
+  padding:7px 12px;
+  border-radius:8px;
+  font-size:12px;
+  box-shadow:0 1px 1px #ddd
+}
+.message{
+  display:flex;
+  margin:5px 0;
+  position:relative
+}
+.message.me{justify-content:flex-end}
+.bubble{
+  max-width:70%;
+  padding:7px 9px 5px;
+  border-radius:8px;
+  background:#fff;
+  box-shadow:0 1px 1px #ddd;
+  position:relative
+}
+.me .bubble{background:var(--bubble)}
+.text{
+  white-space:pre-wrap;
+  word-break:break-word;
+  padding-right:35px
+}
+.meta{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:3px;
+  margin-top:3px;
+  color:#667781;
+  font-size:10px
+}
+.ticks.read{color:#53bdeb}
+.msg-image{
+  width:280px;
+  max-width:100%;
+  max-height:300px;
+  object-fit:cover;
+  border-radius:7px;
+  display:block
+}
+.file-card{
+  background:#f0f2f5;
+  border-radius:7px;
+  padding:10px;
+  display:flex;
+  align-items:center;
+  gap:10px
+}
+.reply{
+  border-left:4px solid var(--green);
+  background:rgba(0,0,0,.06);
+  padding:5px 8px;
+  border-radius:4px;
+  margin-bottom:5px;
+  font-size:12px
+}
+.reply b{display:block;color:var(--green)}
+.input-area{
+  background:#f0f2f5;
+  min-height:62px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px
+}
+.message-input{
+  flex:1;
+  background:#fff;
+  border-radius:9px;
+  min-height:42px;
+  max-height:120px;
+  border:0;
+  outline:0;
+  padding:11px 14px;
+  resize:none
+}
+.send{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  background:var(--green);
+  color:#fff;
+  font-size:20px
+}
+.record{
+  background:#54656f
+}
+.record.recording{
+  background:#d93025
+}
+.reply-bar{
+  background:#fff;
+  padding:8px 14px;
+  border-left:4px solid var(--green);
+  display:none;
+  justify-content:space-between
+}
+
+/* MENU */
+.menu{
+  position:absolute;
+  z-index:50;
+  background:#fff;
+  box-shadow:0 4px 18px rgba(0,0,0,.25);
+  border-radius:8px;
+  overflow:hidden;
+  display:none;
+  min-width:180px
+}
+.menu button{
+  width:100%;
+  padding:11px 15px;
+  text-align:left;
+  background:#fff
+}
+.menu button:hover{background:#f0f2f5}
+
+/* MODAL */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:100
+}
+.modal{
+  width:min(500px,92%);
+  max-height:90vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 40px rgba(0,0,0,.3)
+}
+.modal-head{
+  padding:18px;
+  border-bottom:1px solid #ddd;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.modal-body{padding:18px}
+.modal input,.modal textarea{
+  width:100%;
+  border:1px solid #ddd;
+  border-radius:7px;
+  padding:11px;
+  outline:0;
+  margin:7px 0 14px
+}
+.primary{
+  background:var(--green);
+  color:#fff;
+  padding:11px 18px;
+  border-radius:7px
+}
+.secondary{
+  background:#eee;
+  padding:11px 18px;
+  border-radius:7px
+}
+.form-row{
+  display:flex;
+  gap:10px;
+  justify-content:flex-end
+}
+
+/* EMOJI */
+.emoji-panel{
+  position:absolute;
+  bottom:68px;
+  left:10px;
+  width:330px;
+  max-height:250px;
+  overflow:auto;
+  background:#fff;
+  box-shadow:0 5px 25px rgba(0,0,0,.25);
+  border-radius:10px;
+  padding:10px;
+  display:none;
+  z-index:30
+}
+.emoji-panel button{
+  background:transparent;
+  font-size:24px;
+  padding:6px
+}
+
+/* STATUS */
+.status-circle{
+  border:3px solid var(--green);
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  padding:2px
+}
+.status-circle .avatar{
+  width:100%;
+  height:100%
+}
+.status-item{
+  padding:12px 15px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  cursor:pointer
+}
+.status-item:hover{background:#f5f5f5}
+
+/* CALL */
+.call-item{
+  padding:14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-bottom:1px solid #eee
+}
+.call-icon{font-size:22px}
+
+/* LOCK */
+.lock{
+  position:fixed;
+  inset:0;
+  background:#111b21;
+  color:#fff;
+  z-index:500;
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+.lock-box{
+  width:min(360px,90%);
+  text-align:center
+}
+.lock-logo{
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:var(--green);
+  margin:0 auto 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:40px
+}
+.lock input{
+  width:100%;
+  padding:14px;
+  margin:15px 0;
+  border:0;
+  border-radius:8px;
+  text-align:center;
+  outline:0
+}
+
+/* PROFILE */
+.profile{
+  text-align:center
+}
+.big-avatar{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  margin:10px auto 20px;
+  background:var(--green);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  overflow:hidden
+}
+.big-avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover
+}
+
+/* SETTINGS */
+.setting{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 0;
+  border-bottom:1px solid #eee
+}
+.switch{
+  width:45px;
+  height:24px;
+  background:#aaa;
+  border-radius:20px;
+  position:relative
+}
+.switch:after{
+  content:"";
+  width:20px;
+  height:20px;
+  background:#fff;
+  position:absolute;
+  top:2px;
+  left:2px;
+  border-radius:50%;
+  transition:.2s
+}
+.switch.on{background:var(--green)}
+.switch.on:after{left:23px}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#222;
+  color:#fff;
+  padding:11px 17px;
+  border-radius:8px;
+  z-index:999;
+  display:none
+}
+
+/* DARK */
+body.dark{
+  background:#0b141a;
+  color:#e9edef
+}
+.dark .sidebar,
+.dark .modal,
+.dark .emoji-panel{background:#111b21;color:#e9edef}
+.dark .top,
+.dark .chat-header,
+.dark .input-area{background:#202c33}
+.dark .searchbox,
+.dark .message-input{background:#2a3942;color:#fff}
+.dark .chat-item{border-color:#202c33}
+.dark .chat-item:hover,.dark .chat-item.active{background:#202c33}
+.dark .tabs button{background:#111b21;color:#8696a0}
+.dark .tabs button.active{color:#00a884}
+.dark .last,.dark .chat-time,.dark .header-status{color:#8696a0}
+.dark .messages{background-color:#0b141a}
+.dark .bubble{background:#202c33;color:#e9edef}
+.dark .me .bubble{background:#005c4b}
+.dark .day span{background:#182229;color:#8696a0}
+.dark .modal input,.dark .modal textarea{background:#2a3942;color:#fff;border-color:#40505a}
+.dark .secondary{background:#2a3942;color:#fff}
+.dark .menu,.dark .menu button{background:#233038;color:#fff}
+.dark .menu button:hover{background:#2a3942}
+.dark .file-card{background:#2a3942}
+.dark .setting{border-color:#2a3942}
+
+/* MOBILE */
+@media(max-width:750px){
+  .sidebar{
+    width:100%;
+    min-width:0
+  }
+  .main{
+    display:none
+  }
+  .app.chat-open .sidebar{display:none}
+  .app.chat-open .main{display:flex}
+  .back{display:block}
+  .messages{padding:15px 4%}
+  .bubble{max-width:85%}
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOCK -->
+<div class="lock" id="lockScreen">
+  <div class="lock-box">
+    <div class="lock-logo">💬</div>
+    <h2>Yusuf Chat</h2>
+    <p style="margin-top:8px;color:#aebac1">Geli magacaaga si aad u bilowdo</p>
+    <input id="loginName" placeholder="Magacaaga">
+    <input id="loginPin" type="password" maxlength="6" placeholder="PIN (ikhtiyaari)">
+    <button class="primary" style="width:100%" onclick="startApp()">Bilow</button>
+  </div>
+</div>
+
+<div class="app" id="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="top">
+    <div class="avatar" id="myAvatar">Y</div>
+
+    <div class="top-actions">
+      <button class="icon" onclick="openProfile()" title="Profile">👤</button>
+      <button class="icon" onclick="openNewChat()" title="New chat">✏️</button>
+      <button class="icon" onclick="openSettings()" title="Settings">⋮</button>
+    </div>
+  </div>
+
+  <div class="search">
+    <div class="searchbox">
+      🔍
+      <input id="searchInput" placeholder="Raadi chat ama qof..." oninput="searchChats()">
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" onclick="showTab('chats',this)">Chats</button>
+    <button onclick="showTab('status',this)">Status</button>
+    <button onclick="showTab('calls',this)">Calls</button>
+  </div>
+
+  <div class="list" id="sideList"></div>
+
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="chat-header">
+    <button class="icon back" onclick="closeChat()">‹</button>
+
+    <div class="avatar" id="headerAvatar">?</div>
+
+    <div class="header-info">
+      <div class="header-name" id="headerName">Dooro chat</div>
+      <div class="header-status" id="headerStatus">online</div>
+    </div>
+
+    <button class="icon" onclick="startVideoCall()">📹</button>
+    <button class="icon" onclick="startVoiceCall()">📞</button>
+    <button class="icon" onclick="toggleChatMenu()">⋮</button>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="empty">
+      <h2>💬 Yusuf Chat</h2>
+      <p>Dooro qof si aad u bilowdo wada sheekaysiga.</p>
+    </div>
+  </div>
+
+  <div class="reply-bar" id="replyBar">
+    <div>
+      <b style="color:#00a884">Reply</b>
+      <div id="replyText"></div>
+    </div>
+    <button onclick="cancelReply()">✕</button>
+  </div>
+
+  <div class="emoji-panel" id="emojiPanel"></div>
+
+  <div class="input-area">
+    <button class="icon" onclick="toggleEmoji()">😊</button>
+
+    <button class="icon" onclick="document.getElementById('fileInput').click()">📎</button>
+
+    <input id="fileInput" type="file" multiple hidden onchange="handleFiles(event)">
+
+    <textarea
+      id="messageInput"
+      class="message-input"
+      rows="1"
+      placeholder="Qor fariin..."
+      onkeydown="handleEnter(event)"
+    ></textarea>
+
+    <button class="send" id="sendButton" onclick="sendMessage()">➤</button>
+    <button class="send record" id="recordButton" onclick="toggleRecording()">🎙️</button>
+  </div>
+
+  <div class="menu" id="chatMenu">
+    <button onclick="pinCurrent()">📌 Pin chat</button>
+    <button onclick="muteCurrent()">🔕 Mute chat</button>
+    <button onclick="clearCurrent()">🧹 Clear messages</button>
+    <button onclick="deleteCurrent()">🗑️ Delete chat</button>
+    <button onclick="openProfile()">👤 View profile</button>
+  </div>
+
+</main>
+</div>
+
+<!-- NEW CHAT -->
+<div class="overlay" id="newChatModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>New Contact</h3>
+      <button onclick="closeModal('newChatModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <label>Magaca</label>
+      <input id="newName" placeholder="Tusaale: Ahmed">
+
+      <label>Number</label>
+      <input id="newNumber" placeholder="+252...">
+
+      <label>About</label>
+      <input id="newAbout" placeholder="Hello! I am using Yusuf Chat">
+
+      <div class="form-row">
+        <button class="secondary" onclick="closeModal('newChatModal')">Cancel</button>
+        <button class="primary" onclick="createContact()">Save Contact</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="overlay" id="profileModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>My Profile</h3>
+      <button onclick="closeModal('profileModal')">✕</button>
+    </div>
+
+    <div class="modal-body profile">
+      <div class="big-avatar" id="profileAvatar">Y</div>
+
+      <input type="file" id="profileImage" accept="image/*" onchange="changeProfileImage(event)">
+
+      <label>Magac</label>
+      <input id="profileName">
+
+      <label>About</label>
+      <textarea id="profileAbout">Hey! I am using Yusuf Chat.</textarea>
+
+      <button class="primary" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Settings</h3>
+      <button onclick="closeModal('settingsModal')">✕</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="setting">
+        <div>
+          <b>Dark mode</b>
+          <div style="font-size:12px;color:#667781">Beddel muuqaalka</div>
+        </div>
+        <div class="switch" id="darkSwitch" onclick="toggleDark()"></div>
+      </div>
+
+      <div class="setting">
+        <div>
+          <b>Notifications</b>
+          <div style="font-size:12px;color:#667781">Ogeysiisyada fariimaha</div>
+        </div>
+        <div class="switch on" id="notificationSwitch" onclick="toggleSetting('notifications')"></div>
+      </div>
+
+      <div class="setting">
+        <div>
+          <b>Message sound</b>
+          <div style="font-size:12px;color:#667781">Cod marka fariin timaado</div>
+        </div>
+        <div class="switch on" id="soundSwitch" onclick="toggleSetting('sound')"></div>
+      </div>
+
+      <div class="setting">
+        <div>
+          <b>Enter to send</b>
+          <div style="font-size:12px;color:#667781">Enter = dir fariinta</div>
+        </div>
+        <div class="switch on" id="enterSwitch" onclick="toggleSetting('enter')"></div>
+      </div>
+
+      <div class="setting">
+        <div>
+          <b>Auto reply demo</b>
+          <div style="font-size:12px;color:#667781">Jawaab tijaabo ah</div>
+        </div>
+        <div class="switch on" id="autoSwitch" onclick="toggleSetting('auto')"></div>
+      </div>
+
+      <br>
+
+      <button class="secondary" style="width:100%" onclick="changePIN()">
+        🔐 Beddel PIN
+      </button>
+
+      <br><br>
+
+      <button class="secondary" style="width:100%" onclick="exportData()">
+        💾 Export data
+      </button>
+
+      <br><br>
+
+      <button style="width:100%;padding:12px;background:#d93025;color:#fff;border-radius:7px"
+              onclick="resetApp()">
+        ⚠️ Reset App
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- STATUS COMPOSER -->
+<div class="overlay" id="statusModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add Status</h3>
+      <button onclick="closeModal('statusModal')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <textarea id="statusText" rows="5" placeholder="Maxaad rabtaa inaad status ka dhigto?"></textarea>
+
+      <input type="color" id="statusColor" value="#00a884">
+
+      <br><br>
+
+      <button class="primary" onclick="addStatus()">Publish Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALL -->
+<div class="overlay" id="callModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="callTitle">Call</h3>
+      <button onclick="endCall()">✕</button>
+    </div>
+
+    <div class="modal-body" style="text-align:center;padding:40px">
+      <div class="big-avatar" id="callAvatar">?</div>
+      <h2 id="callName">User</h2>
+      <p id="callType">Calling...</p>
+
+      <br>
+
+      <button style="width:60px;height:60px;border-radius:50%;background:#d93025;color:white;font-size:25px"
+              onclick="endCall()">📞</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="menu" id="messageMenu">
+  <button onclick="replyMessage()">↩️ Reply</button>
+  <button onclick="copyMessage()">📋 Copy</button>
+  <button onclick="forwardMessage()">↪️ Forward</button>
+  <button onclick="deleteMessage()">🗑️ Delete</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   YUSUF CHAT
+   One-file HTML + CSS + JavaScript
+   Local/browser demo
+========================================================= */
+
+const KEY = "yusuf_chat_complete_v1";
+
+let state = {
+  user:{
+    name:"",
+    about:"Hey! I am using Yusuf Chat.",
+    avatar:"",
+    pin:""
+  },
+
+  settings:{
+    dark:false,
+    notifications:true,
+    sound:true,
+    enter:true,
+    auto:true
+  },
+
+  contacts:[
+    {
+      id:"ahmed",
+      name:"Ahmed",
+      number:"+252 61 0000000",
+      about:"Hello! I am using Yusuf Chat.",
+      avatar:"",
+      online:true,
+      pinned:false,
+      muted:false,
+      messages:[
+        {
+          id:1,
+          from:"them",
+          text:"Salaan 👋",
+          time:"10:20",
+          status:"read"
+        },
+        {
+          id:2,
+          from:"me",
+          text:"Wcs 👋 Sidee tahay?",
+          time:"10:21",
+          status:"read"
+        },
+        {
+          id:3,
+          from:"them",
+          text:"Waan fiicanahay. Adiguna?",
+          time:"10:22",
+          status:"read"
+        }
+      ]
+    },
+
+    {
+      id:"fatima",
+      name:"Fatima",
+      number:"+252 63 0000000",
+      about:"Available",
+      avatar:"",
+      online:true,
+      pinned:false,
+      muted:false,
+      messages:[
+        {
+          id:4,
+          from:"them",
+          text:"Hello 😊",
+          time:"09:30",
+          status:"read"
+        }
+      ]
+    },
+
+    {
+      id:"cyber",
+      name:"Cyber Study",
+      number:"",
+      about:"Cybersecurity group",
+      avatar:"",
+      online:false,
+      pinned:true,
+      muted:false,
+      messages:[
+        {
+          id:5,
+          from:"them",
+          text:"Welcome to the study group 🔐",
+          time:"Yesterday",
+          status:"read"
+        }
+      ]
+    }
+  ],
+
+  statuses:[
+    {
+      id:1,
+      name:"My Status",
+      text:"Ku soo dhawoow Yusuf Chat 👋",
+      color:"#00a884",
+      time:"Today"
+    }
+  ],
+
+  calls:[],
+
+  active:null,
+
+  reply:null,
+
+  selectedMessage:null
+};
+
+let mediaRecorder = null;
+let audioChunks = [];
+let recording = false;
+let recordingSeconds = 0;
+let recordingTimer = null;
+
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+}
+
+function load(){
+  try{
+    const saved=localStorage.getItem(KEY);
+    if(saved){
+      const parsed=JSON.parse(saved);
+      state={...state,...parsed};
+      state.user={...state.user,...(parsed.user||{})};
+      state.settings={...state.settings,...(parsed.settings||{})};
+    }
+  }catch(e){}
+}
+
+function $(id){
+  return document.getElementById(id);
+}
+
+function toast(text){
+  const t=$("toast");
+  t.textContent=text;
+  t.style.display="block";
+  clearTimeout(window.toastTimer);
+  window.toastTimer=setTimeout(()=>{
+    t.style.display="none";
+  },2200);
+}
+
+function initials(name){
+  if(!name)return "?";
+  return name
+    .split(" ")
+    .map(x=>x[0])
+    .join("")
+    .slice(0,2)
+    .toUpperCase();
+}
+
+function avatarHTML(person){
+  if(person.avatar){
+    return `<img src="${person.avatar}">`;
+  }
+  return initials(person.name);
+}
+
+function startApp(){
+
+  const name=$("loginName").value.trim();
+  const pin=$("loginPin").value.trim();
+
+  if(!name){
+    toast("Fadlan geli magacaaga");
+    return;
+  }
+
+  state.user.name=name;
+
+  if(pin){
+    state.user.pin=pin;
+  }
+
+  save();
+
+  $("lockScreen").style.display="none";
+
+  renderEverything();
+
+  toast("Ku soo dhawoow "+name+" 👋");
+}
+
+function renderEverything(){
+  renderMyAvatar();
+  renderChats();
+  applySettings();
+
+  if(state.active){
+    openChat(state.active);
+  }
+}
+
+function renderMyAvatar(){
+
+  const avatar=$("myAvatar");
+
+  if(state.user.avatar){
+    avatar.innerHTML=`<img src="${state.user.avatar}">`;
+  }else{
+    avatar.textContent=initials(state.user.name);
+  }
+}
+
+function renderChats(){
+
+  const list=$("sideList");
+
+  const search=($("searchInput").value||"").toLowerCase();
+
+  let contacts=[...state.contacts];
+
+  contacts.sort((a,b)=>{
+    if(a.pinned!==b.pinned)return a.pinned?-1:1;
+    return 0;
+  });
+
+  contacts=contacts.filter(c=>
+    c.name.toLowerCase().includes(search)
+  );
+
+  if(!contacts.length){
+    list.innerHTML=`
+      <div class="empty">
+        <h3>Ma jiro contact</h3>
+        <p>Riix ✏️ si aad qof ugu darto.</p>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML=contacts.map(c=>{
+
+    const last=c.messages?.[c.messages.length-1];
+
+    return `
+      <div class="chat-item ${state.active===c.id?"active":""}"
+           onclick="openChat('${c.id}')">
+
+        <div class="avatar">${avatarHTML(c)}</div>
+
+        <div class="chat-info">
+
+          <div class="chat-row">
+            <div class="chat-name">
+              ${escapeHTML(c.name)}
+              ${c.pinned?" 📌":""}
+              ${c.muted?" 🔕":""}
+            </div>
+
+            <div class="chat-time">
+              ${last?last.time:""}
+            </div>
+          </div>
+
+          <div class="last">
+            ${last ? escapeHTML(
+              last.text || last.fileName || "Attachment"
+            ) : "No messages"}
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  }).join("");
+}
+
+function openChat(id){
+
+  const c=state.contacts.find(x=>x.id===id);
+
+  if(!c)return;
+
+  state.active=id;
+
+  $("app").classList.add("chat-open");
+
+  $("headerName").textContent=c.name;
+  $("headerStatus").textContent=
+    c.online ? "online" : "last seen recently";
+
+  $("headerAvatar").innerHTML=avatarHTML(c);
+
+  renderMessages();
+  renderChats();
+
+  $("messageInput").focus();
+}
+
+function closeChat(){
+  $("app").classList.remove("chat-open");
+  state.active=null;
+  renderChats();
+}
+
+function renderMessages(){
+
+  const c=state.contacts.find(x=>x.id===state.active);
+  const box=$("messages");
+
+  if(!c){
+    box.innerHTML=`
+      <div class="empty">
+        <h2>💬 Yusuf Chat</h2>
+        <p>Dooro chat.</p>
+      </div>`;
+    return;
+  }
+
+  if(!c.messages || !c.messages.length){
+    box.innerHTML=`
+      <div class="day"><span>Today</span></div>
+      <div class="empty">
+        No messages yet.
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML=`
+    <div class="day"><span>Today</span></div>
+    ${c.messages.map(m=>messageHTML(m)).join("")}
+  `;
+
+  box.scrollTop=box.scrollHeight;
+}
+
+function messageHTML(m){
+
+  const mine=m.from==="me";
+
+  let content="";
+
+  if(m.type==="image"){
+    content=`
+      <img class="msg-image"
+           src="${m.data}"
+           onclick="window.open(this.src)">
+    `;
+  }
+
+  else if(m.type==="file"){
+    content=`
+      <div class="file-card">
+        📄
+        <div>
+          <b>${escapeHTML(m.fileName||"File")}</b>
+          <br>
+          <small>Attachment</small>
+        </div>
+      </div>
+    `;
+  }
+
+  else if(m.type==="audio"){
+    content=`
+      <audio controls style="max-width:230px">
+        <source src="${m.data}">
+      </audio>
+    `;
+  }
+
+  else{
+    content=`
+      <div class="text">${escapeHTML(m.text||"")}</div>
+    `;
+  }
+
+  const reply=m.reply
+    ? `
+      <div class="reply">
+        <b>${escapeHTML(m.reply.name||"Message")}</b>
+        ${escapeHTML(m.reply.text||"")}
+      </div>
+    `
+    :"";
+
+  return `
+    <div class="message ${mine?"me":""}"
+         ondblclick="selectMessage(${m.id})">
+
+      <div class="bubble"
+           oncontextmenu="showMessageMenu(event,${m.id});return false">
+
+        ${reply}
+        ${content}
+
+        <div class="meta">
+          ${m.time||""}
+
+          ${mine ? `
+            <span class="ticks ${m.status==="read"?"read":""}">
+              ${m.status==="sent"?"✓":"✓✓"}
+            </span>
+          `:""}
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+function escapeHTML(str){
+  return String(str||"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function nowTime(){
+
+  return new Date().toLocaleTimeString(
+    [],
+    {
+      hour:"2-digit",
+      minute:"2-digit"
+    }
+  );
+}
+
+function sendMessage(){
+
+  if(!state.active){
+    toast("Marka hore dooro chat");
+    return;
+  }
+
+  const input=$("messageInput");
+  const text=input.value.trim();
+
+  if(!text)return;
+
+  const c=state.contacts.find(x=>x.id===state.active);
+
+  const msg={
+    id:Date.now(),
+    from:"me",
+    text:text,
+    time:nowTime(),
+    status:"sent"
+  };
+
+  if(state.reply){
+    msg.reply={
+      name:state.reply.from==="me"
+        ? state.user.name
+        : c.name,
+      text:state.reply.text||""
+    };
+  }
+
+  c.messages.push(msg);
+
+  input.value="";
+  cancelReply();
+
+  save();
+  renderMessages();
+  renderChats();
+
+  setTimeout(()=>{
+    msg.status="delivered";
+    save();
+    renderMessages();
+  },700);
+
+  setTimeout(()=>{
+    msg.status="read";
+    save();
+    renderMessages();
+  },1500);
+
+  if(state.settings.auto){
+
+    setTimeout(()=>{
+
+      if(state.active!==c.id)return;
+
+      const replies=[
+        "Haye 👍",
+        "Waan helay fariintaada.",
+        "Okay 😊",
+        "Mahadsanid!",
+        "Waan kula socdaa.",
+        "Interesting 👌"
+      ];
+
+      const reply=replies[
+        Math.floor(Math.random()*replies.length)
+      ];
+
+      c.messages.push({
+        id:Date.now(),
+        from:"them",
+        text:reply,
+        time:nowTime(),
+        status:"read"
+      });
+
+      save();
+      renderMessages();
+      renderChats();
+
+      if(state.settings.notifications){
+        toast(c.name+": "+reply);
+      }
+
+    },1200);
+  }
+}
+
+function handleEnter(e){
+
+  if(e.key==="Enter" && !e.shiftKey && state.settings.enter){
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function toggleEmoji(){
+
+  const panel=$("emojiPanel");
+
+  if(panel.style.display==="block"){
+    panel.style.display="none";
+    return;
+  }
+
+  const emojis=[
+    "😀","😃","😄","😁","😆","😅","😂","🤣",
+    "😊","😇","🙂","🙃","😉","😌","😍","🥰",
+    "😘","😎","🤩","🥳","😢","😭","😡","😱",
+    "👍","👎","👏","🙏","❤️","💚","💙","🔥",
+    "🎉","💯","✅","❌","⭐","💻","🔐","📱"
+  ];
+
+  panel.innerHTML=emojis.map(e=>
+    `<button onclick="addEmoji('${e}')">${e}</button>`
+  ).join("");
+
+  panel.style.display="block";
+}
+
+function addEmoji(e){
+
+  $("messageInput").value+=e;
+  $("messageInput").focus();
+}
+
+function handleFiles(event){
+
+  const files=[...event.target.files];
+
+  if(!state.active){
+    toast("Dooro chat marka hore");
+    return;
+  }
+
+  files.forEach(file=>{
+
+    const reader=new FileReader();
+
+    reader.onload=()=>{
+
+      const c=state.contacts.find(x=>x.id===state.active);
+
+      if(file.type.startsWith("image/")){
+
+        c.messages.push({
+          id:Date.now()+Math.random(),
+          from:"me",
+          type:"image",
+          data:reader.result,
+          fileName:file.name,
+          time:nowTime(),
+          status:"read"
+        });
+
+      }else{
+
+        c.messages.push({
+          id:Date.now()+Math.random(),
+          from:"me",
+          type:"file",
+          data:reader.result,
+          fileName:file.name,
+          time:nowTime(),
+          status:"read"
+        });
+      }
+
+      save();
+      renderMessages();
+      renderChats();
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+  event.target.value="";
+}
+
+async function toggleRecording(){
+
+  if(recording){
+    stopRecording();
+    return;
+  }
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    toast("Browser-kan ma taageerayo voice recording");
+    return;
+  }
+
+  try{
+
+    const stream=await navigator.mediaDevices.getUserMedia({
+      audio:true
+    });
+
+    audioChunks=[];
+
+    mediaRecorder=new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable=e=>{
+      if(e.data.size>0){
+        audioChunks.push(e.data);
+      }
+    };
+
+    mediaRecorder.onstop=()=>{
+
+      const blob=new Blob(
+        audioChunks,
+        {type:"audio/webm"}
+      );
+
+      const reader=new FileReader();
+
+      reader.onload=()=>{
+
+        if(!state.active)return;
+
+        const c=state.contacts.find(
+          x=>x.id===state.active
+        );
+
+        c.messages.push({
+          id:Date.now(),
+          from:"me",
+          type:"audio",
+          data:reader.result,
+          time:nowTime(),
+          status:"read"
+        });
+
+        save();
+        renderMessages();
+        renderChats();
+      };
+
+      reader.readAsDataURL(blob);
+
+      stream.getTracks().forEach(
+        track=>track.stop()
+      );
+    };
+
+    mediaRecorder.start();
+
+    recording=true;
+    recordingSeconds=0;
+
+    $("recordButton").classList.add("recording");
+    $("recordButton").textContent="⏹️";
+
+    recordingTimer=setInterval(()=>{
+
+      recordingSeconds++;
+
+      if(recordingSeconds>=60){
+        stopRecording();
+      }
+
+    },1000);
+
+    toast("Recording...");
+
+  }catch(e){
+    toast("Microphone permission waa la diiday");
+  }
+}
+
+function stopRecording(){
+
+  if(mediaRecorder && recording){
+    mediaRecorder.stop();
+  }
+
+  recording=false;
+
+  clearInterval(recordingTimer);
+
+  $("recordButton").classList.remove("recording");
+  $("recordButton").textContent="🎙️";
+}
+
+function selectMessage(id){
+  state.selectedMessage=id;
+  toast("Fariinta waa la doortay");
+}
+
+function showMessageMenu(e,id){
+
+  state.selectedMessage=id;
+
+  const menu=$("messageMenu");
+
+  menu.style.display="block";
+
+  menu.style.left=Math.min(
+    e.clientX,
+    window.innerWidth-200
+  )+"px";
+
+  menu.style.top=Math.min(
+    e.clientY,
+    window.innerHeight-230
+  )+"px";
+}
+
+function getSelectedMessage(){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c)return null;
+
+  return c.messages.find(
+    x=>x.id===state.selectedMessage
+  );
+}
+
+function replyMessage(){
+
+  const m=getSelectedMessage();
+
+  if(!m)return;
+
+  state.reply=m;
+
+  $("replyText").textContent=
+    m.text || m.fileName || "Attachment";
+
+  $("replyBar").style.display="flex";
+
+  $("messageMenu").style.display="none";
+
+  $("messageInput").focus();
+}
+
+function cancelReply(){
+
+  state.reply=null;
+
+  $("replyBar").style.display="none";
+}
+
+function copyMessage(){
+
+  const m=getSelectedMessage();
+
+  if(!m)return;
+
+  if(m.text){
+    navigator.clipboard?.writeText(m.text);
+    toast("Copied");
+  }else{
+    toast("Fariintan text ma aha");
+  }
+
+  $("messageMenu").style.display="none";
+}
+
+function forwardMessage(){
+
+  const m=getSelectedMessage();
+
+  if(!m)return;
+
+  const target=state.contacts.find(
+    x=>x.id!==state.active
+  );
+
+  if(!target){
+    toast("Contact kale ma jiro");
+    return;
+  }
+
+  target.messages.push({
+    id:Date.now(),
+    from:"me",
+    text:m.text || "Forwarded attachment",
+    time:nowTime(),
+    status:"read"
+  });
+
+  save();
+
+  $("messageMenu").style.display="none";
+
+  toast("Fariinta waxaa loo forward gareeyay "+target.name);
+}
+
+function deleteMessage(){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c)return;
+
+  c.messages=c.messages.filter(
+    x=>x.id!==state.selectedMessage
+  );
+
+  save();
+
+  renderMessages();
+
+  $("messageMenu").style.display="none";
+
+  toast("Fariinta waa la tirtiray");
+}
+
+function toggleChatMenu(){
+
+  const menu=$("chatMenu");
+
+  menu.style.display=
+    menu.style.display==="block"
+      ?"none"
+      :"block";
+
+  menu.style.right="15px";
+  menu.style.top="65px";
+}
+
+function pinCurrent(){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c)return;
+
+  c.pinned=!c.pinned;
+
+  save();
+  renderChats();
+
+  $("chatMenu").style.display="none";
+
+  toast(c.pinned?"Chat pinned":"Chat unpinned");
+}
+
+function muteCurrent(){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c)return;
+
+  c.muted=!c.muted;
+
+  save();
+  renderChats();
+
+  $("chatMenu").style.display="none";
+
+  toast(c.muted?"Chat muted":"Chat unmuted");
+}
+
+function clearCurrent(){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c)return;
+
+  if(confirm("Ma tirtirtaa dhammaan fariimaha chat-kan?")){
+
+    c.messages=[];
+
+    save();
+    renderMessages();
+    renderChats();
+
+    $("chatMenu").style.display="none";
+
+    toast("Messages cleared");
+  }
+}
+
+function deleteCurrent(){
+
+  if(!state.active)return;
+
+  if(!confirm("Ma tirtirtaa chat-kan?"))return;
+
+  state.contacts=state.contacts.filter(
+    x=>x.id!==state.active
+  );
+
+  state.active=null;
+
+  save();
+
+  $("app").classList.remove("chat-open");
+
+  renderChats();
+
+  $("chatMenu").style.display="none";
+
+  toast("Chat deleted");
+}
+
+function openNewChat(){
+
+  $("newName").value="";
+  $("newNumber").value="";
+  $("newAbout").value="";
+
+  $("newChatModal").style.display="flex";
+}
+
+function createContact(){
+
+  const name=$("newName").value.trim();
+
+  if(!name){
+    toast("Magac geli");
+    return;
+  }
+
+  const id=
+    "user_"+Date.now();
+
+  state.contacts.unshift({
+    id:id,
+    name:name,
+    number:$("newNumber").value.trim(),
+    about:$("newAbout").value.trim(),
+    avatar:"",
+    online:true,
+    pinned:false,
+    muted:false,
+    messages:[]
+  });
+
+  save();
+
+  closeModal("newChatModal");
+
+  renderChats();
+
+  openChat(id);
+
+  toast("Contact added");
+}
+
+function showTab(tab,button){
+
+  document.querySelectorAll(".tabs button")
+    .forEach(b=>b.classList.remove("active"));
+
+  button.classList.add("active");
+
+  if(tab==="chats"){
+    renderChats();
+  }
+
+  if(tab==="status"){
+    renderStatus();
+  }
+
+  if(tab==="calls"){
+    renderCalls();
+  }
+}
+
+function renderStatus(){
+
+  const list=$("sideList");
+
+  list.innerHTML=`
+
+    <div class="status-item" onclick="openStatusModal()">
+      <div class="avatar">+</div>
+      <div>
+        <b>My Status</b>
+        <div class="last">Add status update</div>
+      </div>
+    </div>
+
+    <div style="padding:12px 15px;color:#667781;font-weight:bold">
+      Recent updates
+    </div>
+
+    ${state.statuses.map(s=>`
+
+      <div class="status-item"
+           onclick="viewStatus(${s.id})">
+
+        <div class="status-circle">
+          <div class="avatar"
+               style="background:${s.color}">
+            ${initials(s.name)}
+          </div>
+        </div>
+
+        <div>
+          <b>${escapeHTML(s.name)}</b>
+          <div class="last">${escapeHTML(s.text)}</div>
+        </div>
+
+      </div>
+
+    `).join("")}
+  `;
+}
+
+function openStatusModal(){
+  $("statusModal").style.display="flex";
+}
+
+function addStatus(){
+
+  const text=$("statusText").value.trim();
+
+  if(!text){
+    toast("Qor status");
+    return;
+  }
+
+  state.statuses.unshift({
+    id:Date.now(),
+    name:"My Status",
+    text:text,
+    color:$("statusColor").value,
+    time:"Now"
+  });
+
+  save();
+
+  closeModal("statusModal");
+
+  $("statusText").value="";
+
+  toast("Status published");
+
+  renderStatus();
+}
+
+function viewStatus(id){
+
+  const s=state.statuses.find(x=>x.id===id);
+
+  if(!s)return;
+
+  alert(
+    s.name+
+    "\\n\\n"+
+    s.text+
+    "\\n\\n"+
+    s.time
+  );
+}
+
+function renderCalls(){
+
+  const list=$("sideList");
+
+  if(!state.calls.length){
+
+    list.innerHTML=`
+      <div class="empty">
+        <h3>📞 No calls</h3>
+        <p>Call history-ga halkan ayuu kasoo muuqanayaa.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  list.innerHTML=state.calls.map(call=>`
+
+    <div class="call-item">
+
+      <div class="avatar">${initials(call.name)}</div>
+
+      <div class="chat-info">
+        <b>${escapeHTML(call.name)}</b>
+
+        <div class="last">
+          ${call.video?"📹":"📞"}
+          ${call.incoming?"Incoming":"Outgoing"}
+          · ${call.time}
+        </div>
+      </div>
+
+      <div class="call-icon">
+        ${call.video?"📹":"📞"}
+      </div>
+
+    </div>
+
+  `).join("");
+}
+
+function startVoiceCall(){
+  startCall(false);
+}
+
+function startVideoCall(){
+  startCall(true);
+}
+
+function startCall(video){
+
+  const c=state.contacts.find(
+    x=>x.id===state.active
+  );
+
+  if(!c){
+    toast("Dooro qof marka hore");
+    return;
+  }
+
+  $("callName").textContent=c.name;
+  $("callAvatar").innerHTML=avatarHTML(c);
+
+  $("callType").textContent=
+    video ? "Video calling..." : "Calling...";
+
+  $("callTitle").textContent=
+    video ? "📹 Video Call" : "📞 Voice Call";
+
+  $("callModal").style.display="flex";
+
+  state.calls.unshift({
+    name:c.name,
+    video:video,
+    incoming:false,
+    time:nowTime()
+  });
+
+  save();
+}
+
+function endCall(){
+
+  closeModal("callModal");
+
+  toast("Call ended");
+}
+
+function openProfile(){
+
+  $("profileName").value=state.user.name;
+  $("profileAbout").value=state.user.about;
+
+  const a=$("profileAvatar");
+
+  if(state.user.avatar){
+    a.innerHTML=`<img src="${state.user.avatar}">`;
+  }else{
+    a.textContent=initials(state.user.name);
+  }
+
+  $("profileModal").style.display="flex";
+}
+
+function changeProfileImage(event){
+
+  const file=event.target.files[0];
+
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=()=>{
+    state.user.avatar=reader.result;
+
+    const a=$("profileAvatar");
+
+    a.innerHTML=`<img src="${reader.result}">`;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function saveProfile(){
+
+  const name=$("profileName").value.trim();
+
+  if(!name){
+    toast("Magac geli");
+    return;
+  }
+
+  state.user.name=name;
+  state.user.about=$("profileAbout").value.trim();
+
+  save();
+
+  renderMyAvatar();
+
+  closeModal("profileModal");
+
+  toast("Profile saved");
+}
+
+function openSettings(){
+
+  $("settingsModal").style.display="flex";
+
+  updateSwitches();
+}
+
+function toggleDark(){
+
+  state.settings.dark=!state.settings.dark;
+
+  save();
+
+  applySettings();
+  updateSwitches();
+}
+
+function toggleSetting(key){
+
+  state.settings[key]=!state.settings[key];
+
+  save();
+
+  updateSwitches();
+
+  toast("Setting updated");
+}
+
+function updateSwitches(){
+
+  const map={
+    dark:"darkSwitch",
+    notifications:"notificationSwitch",
+    sound:"soundSwitch",
+    enter:"enterSwitch",
+    auto:"autoSwitch"
+  };
+
+  Object.keys(map).forEach(key=>{
+
+    const el=$(map[key]);
+
+    if(!el)return;
+
+    el.classList.toggle(
+      "on",
+      !!state.settings[key]
+    );
+  });
+}
+
+function applySettings(){
+
+  document.body.classList.toggle(
+    "dark",
+    !!state.settings.dark
+  );
+}
+
+function changePIN(){
+
+  const pin=prompt(
+    "Geli PIN cusub (4-6 digits):"
+  );
+
+  if(pin===null)return;
+
+  if(pin && !/^\d{4,6}$/.test(pin)){
+    toast("PIN waa inuu noqdaa 4-6 numbers");
+    return;
+  }
+
+  state.user.pin=pin;
+
+  save();
+
+  toast("PIN updated");
+}
+
+function exportData(){
+
+  const data=JSON.stringify(
+    state,
+    null,
+    2
+  );
+
+  const blob=new Blob(
+    [data],
+    {type:"application/json"}
+  );
+
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download="yusuf-chat-backup.json";
+
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  toast("Backup exported");
+}
+
+function resetApp(){
+
+  if(!confirm(
+    "Dhammaan data-ga Yusuf Chat waa la tirtirayaa. Sii wad?"
+  ))return;
+
+  localStorage.removeItem(KEY);
+
+  location.reload();
+}
+
+function closeModal(id){
+  $(id).style.display="none";
+}
+
+function searchChats(){
+  renderChats();
+}
+
+/* Close menus when clicking elsewhere */
+document.addEventListener("click",function(e){
+
+  if(
+    !e.target.closest("#chatMenu") &&
+    !e.target.closest(".chat-header .icon")
+  ){
+    $("chatMenu").style.display="none";
+  }
+
+  if(
+    !e.target.closest("#messageMenu") &&
+    !e.target.closest(".bubble")
+  ){
+    $("messageMenu").style.display="none";
+  }
+
+  if(
+    !e.target.closest("#emojiPanel") &&
+    !e.target.closest(".input-area")
+  ){
+    $("emojiPanel").style.display="none";
+  }
+});
+
+/* Escape closes overlays */
+document.addEventListener("keydown",e=>{
+
+  if(e.key==="Escape"){
+
+    document.querySelectorAll(".overlay")
+      .forEach(x=>x.style.display="none");
+
+    $("chatMenu").style.display="none";
+    $("messageMenu").style.display="none";
+    $("emojiPanel").style.display="none";
+  }
+});
+
+/* Start */
+load();
+
+if(state.user.name){
+
+  $("lockScreen").style.display="none";
+
+  renderEverything();
+
+}else{
+
+  $("lockScreen").style.display="flex";
+}
+</script>
+
+</body>
+</html>
+if(state.settings.auto){
+
+  setTimeout(()=>{
+
+    if(state.active !== c.id) return;
+
+    const userText = text.toLowerCase().trim();
+
+    let reply = "";
+
+    // Salaan
+    if(
+      userText.includes("salaan") ||
+      userText.includes("hello") ||
+      userText.includes("hi") ||
+      userText.includes("asc") ||
+      userText.includes("asalaamu")
+    ){
+      reply = "Wcs 😊 Soo dhawoow! Sidee tahay?";
+    }
+
+    // Sidee tahay?
+    else if(
+      userText.includes("sidee tahay") ||
+      userText.includes("iska warran") ||
+      userText.includes("sidee tahay")
+    ){
+      reply = "Waan fiicanahay 😊 Adiguna sidee tahay?";
+    }
+
+    // Waan fiicanahay
+    else if(
+      userText.includes("waan fiicanahay") ||
+      userText.includes("waan wanaagsanahay")
+    ){
+      reply = "Aad ayaan ugu faraxsanahay inaad fiican tahay 😊";
+    }
+
+    // Mahadsanid
+    else if(
+      userText.includes("mahadsanid") ||
+      userText.includes("thanks")
+    ){
+      reply = "Adigaa mudan ❤️";
+    }
+
+    // Haa
+    else if(
+      userText === "haa" ||
+      userText.includes("haa ")
+    ){
+      reply = "Haye 👍 waan fahmay.";
+    }
+
+    // Maya
+    else if(
+      userText === "maya" ||
+      userText.includes("maya ")
+    ){
+      reply = "Okay, dhib ma leh 😊";
+    }
+
+    // Magac
+    else if(
+      userText.includes("magacaa") ||
+      userText.includes("magac") 
+    ){
+      reply = "Magacaygu waa Yusuf Chat 🤖. Adiga magacaa?";
+    }
+
+    // Maxaad qabanaysaa?
+    else if(
+      userText.includes("maxaad qaban") ||
+      userText.includes("maxaa qaban")
+    ){
+      reply = "Hadda adiga ayaan kula sheekaysanayaa 😄";
+    }
+
+    // Waan ku jeclahay
+    else if(
+      userText.includes("waan ku jeclahay") ||
+      userText.includes("love you")
+    ){
+      reply = "Awww 😄❤️ Mahadsanid!";
+    }
+
+    // Goodbye
+    else if(
+      userText.includes("bye") ||
+      userText.includes("nabad galyo")
+  ,
+ 
+}
+Adiga: Salaam
+Fatima: Wcs 😊 Soo dhawoow! Sidee tahay?
+
+Adiga: Waan fiicanahay
+Fatima: Aad ayaan ugu faraxsanahay inaad fiican tahay 😊
+
+Adiga: Maxaad qabanaysaa?
+Fatima: Hadda adiga ayaan kula sheekaysanayaa 😄
+
+Adiga: Cybersecurity ayaan baranayaa
+Fatima: Cybersecurity waa xirfad fiican 🔐...
+
+Adiga: Game ayaan samaynayaa
+Fatima: Game ma samaynaysaa? 🎮...
